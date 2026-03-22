@@ -12,8 +12,6 @@ _AUTH_MAP = {
     "fynd_group_list": "group_list",
     "fynd_group_show": "group_show",
     "fynd_tag_list": "tag_list",
-    "fynd_openapi_spec": "resource_openapi_show",
-    "fynd_dataset_openapi_spec": "dataset_openapi_show",
 }
 
 
