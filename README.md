@@ -1,7 +1,52 @@
 # ckanext-fynd
 
-MCP (Model Context Protocol) server for CKAN. Enables AI assistants to search
-datasets, query DataStore, and explore portal metadata through natural language.
+MCP ([Model Context Protocol](https://modelcontextprotocol.io/)) server for CKAN.
+
+## What is MCP?
+
+MCP is an open standard that lets AI assistants — Claude, ChatGPT, GitHub Copilot, and others — connect to external data sources through a structured protocol. Instead of scraping websites or relying on stale training data, an MCP-enabled assistant can query live systems directly.
+
+Think of it as a USB-C port for AI: one standard interface that any compliant client can plug into.
+
+## What does this extension do?
+
+ckanext-fynd adds an MCP endpoint to your CKAN portal at `/mcp`. Once installed, any MCP-compatible AI assistant can:
+
+- **Search datasets** by keyword, filter, or facet
+- **Query DataStore records** with field-level filtering and sorting
+- **Browse organisations, groups, and tags** to understand portal structure
+- **Inspect resource schemas** before querying
+
+All through natural language. A user asks "what energy datasets do you have?" and the assistant calls `dataset_search` under the hood, returning real results from your portal.
+
+## Why run MCP inside CKAN?
+
+There are existing standalone MCP servers for CKAN ([ondata](https://github.com/ondata/ckan-mcp-server), [ondics](https://github.com/ondics/ckan-mcp-server)), but they sit outside CKAN and talk to it over HTTP. That means:
+
+- No access to private datasets (they can only see public API responses)
+- No CKAN auth integration (they can't respect your permission model)
+- No extension interoperability (they can't call other extensions' actions)
+- Another service to deploy and maintain
+
+ckanext-fynd runs **inside** CKAN as a native extension. It calls `toolkit.get_action()` directly, respects `check_access()` for every tool call, and inherits your existing auth configuration. If a user has permission to see a dataset through the web UI, they can see it through MCP. If they don't, they can't. No separate auth layer, no API key management, no proxy.
+
+## Quick Example
+
+```bash
+# Search datasets
+curl -X POST http://your-ckan/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"dataset_search","arguments":{"q":"energy","rows":5}},"id":1}'
+
+# Get DataStore field definitions
+curl -X POST http://your-ckan/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"datastore_fields","arguments":{"resource_id":"<uuid>"}},"id":2}'
+```
+
+## Auto-Discovery
+
+The extension serves a discovery document at `/.well-known/mcp.json`, following the [draft MCP discovery specification](https://github.com/modelcontextprotocol/specification/discussions/69). When MCP clients implement auto-discovery, they'll find your portal automatically.
 
 ## Requirements
 
@@ -36,11 +81,6 @@ ckanext.fynd.rate_limit = 60
 ckanext.fynd.datastore_max_rows = 100
 ```
 
-## Endpoints
-
-- `POST /mcp` — MCP Streamable HTTP endpoint (JSON-RPC 2.0)
-- `GET /.well-known/mcp.json` — MCP auto-discovery document
-
 ## Available Tools
 
 | Tool | Description |
@@ -64,7 +104,7 @@ Unit tests (no CKAN required):
 pytest ckanext/fynd/tests/ --ignore=ckanext/fynd/tests/test_integration.py -v
 ```
 
-Integration tests (requires CKAN at localhost:5050 with fynd installed):
+Integration tests (requires a running CKAN instance with fynd installed):
 ```bash
 pytest -m integration -v
 ```
