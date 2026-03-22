@@ -7,7 +7,7 @@ def is_enabled():
 
 def enabled_tool_categories():
     raw = toolkit.config.get(
-        "ckanext.fynd.tools", "datasets datastore organisations groups tags"
+        "ckanext.fynd.tools", "datasets datastore organisations groups tags openapi"
     )
     return set(s.strip() for s in raw.split() if s.strip())
 
