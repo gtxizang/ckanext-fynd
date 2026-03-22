@@ -3,6 +3,7 @@ import ckan.plugins as plugins
 
 from ckanext.fynd.auth import get_auth_functions
 from ckanext.fynd.blueprints import fynd_blueprint
+from ckanext.fynd.tools.openapi import register_if_available
 
 import ckanext.fynd.tools.datasets  # noqa: F401
 import ckanext.fynd.tools.datastore  # noqa: F401
@@ -19,6 +20,8 @@ class FyndPlugin(plugins.SingletonPlugin):
     # IBlueprint
 
     def get_blueprint(self):
+        # Deferred to here because config isn't available at import time
+        register_if_available()
         return [fynd_blueprint]
 
     # IAuthFunctions

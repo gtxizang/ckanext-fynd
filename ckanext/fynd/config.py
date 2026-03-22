@@ -14,3 +14,9 @@ def enabled_tool_categories():
 
 def datastore_max_rows():
     return int(toolkit.config.get("ckanext.fynd.datastore_max_rows", "100"))
+
+
+def openapi_integration_enabled():
+    return toolkit.asbool(
+        toolkit.config.get("ckanext.fynd.openapi_integration", "false")
+    )

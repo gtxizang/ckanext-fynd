@@ -74,7 +74,7 @@ class TestCkanInternalBackend:
         assert result == mock_result
 
 
-EXPECTED_TOOLS = {
+EXPECTED_CORE_TOOLS = {
     "dataset_search", "dataset_show", "dataset_list",
     "datastore_search", "datastore_fields",
     "resource_show",
@@ -87,7 +87,7 @@ EXPECTED_TOOLS = {
 class TestToolRegistration:
     def test_all_tools_registered(self):
         registered = {t["name"] for t in TOOLS}
-        assert registered == EXPECTED_TOOLS
+        assert EXPECTED_CORE_TOOLS.issubset(registered)
 
     def test_dataset_search_calls_package_search(self):
         tool_def = next(t for t in TOOLS if t["name"] == "dataset_search")
